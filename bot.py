@@ -12,6 +12,12 @@ from database_handler import DatabaseHandler
 from helpers import logger_handlers, embed_handler
 from helpers.licence_helper import get_current_time
 
+from webserver import keep_alive
+import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
@@ -35,7 +41,19 @@ startup_extensions = [
 
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
-        self.config = ConfigHandler("config")
+        # convert the developers string to json
+        developers = json.loads(os.getenv('DEVELOPERS'))
+        myconfig = {
+            "bot_description": os.getenv('DISCORD_BOT_DESCRIPTION'),
+            "default_prefix": "!",
+            "developer_log_channel_id": int(os.getenv('DEV_LOG_CHANNEL_ID')),
+            "developers": developers,
+            "maximum_unused_guild_licences": 100,
+            "support_channel_invite": os.getenv('DISCORD_SUPPORT_CHANNEL_INVITE'),
+            "token": os.getenv('DISCORD_BOT_SECRET'),
+            "top_gg_api_key": os.getenv('TOG_GG_API_KEY')
+        }
+        self.config = myconfig
         self.main_db = asyncio.get_event_loop().run_until_complete(DatabaseHandler.create_instance())
         self.up_time_start_time = get_current_time()
         super(Bot, self).__init__(
@@ -128,5 +146,7 @@ if __name__ == "__main__":
             root_logger.error(f"{exc} Failed to load extension {cog_path}")
             traceback_msg = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
             root_logger.warning(traceback_msg)
+    TOKEN = os.getenv('DISCORD_BOT_SECRET')
+    keep_alive()
+    bot.run(TOKEN)
 
-    bot.run(bot.config["token"])
