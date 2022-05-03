@@ -7,7 +7,6 @@ import discord
 from discord.ext import commands
 
 from helpers.misc import maximize_size
-from config_handler import ConfigHandler
 from database_handler import DatabaseHandler
 from helpers import logger_handlers, embed_handler
 from helpers.licence_helper import get_current_time
